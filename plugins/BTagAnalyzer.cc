@@ -109,6 +109,8 @@
 #include "RecoBTag/ImpactParameter/plugins/IPProducer.h"
 #include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
 
+#include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
+
 #include "FWCore/Utilities/interface/RegexMatch.h"
 #include <boost/regex.hpp>
 
@@ -1822,7 +1824,7 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
     if ( dRele < 0.2 || dRmuo < 0.2 || dRtau < 0.3 ) JetInfo[iJetColl].Jet_flavourCleaned[JetInfo[iJetColl].nJet] = -999;
 
     // against pileup:
-    if ( JetInfo[iJetColl].Jet_genpt[JetInfo[iJetColl].nJet] < 8. )  JetInfo[iJetColl].Jet_flavourCleaned[JetInfo[iJetColl].nJet] = 0;
+    if ( JetInfo[iJetColl].Jet_genpt[JetInfo[iJetColl].nJet] < 8. )  JetInfo[iJetColl].Jet_flavourCleaned[JetInfo[iJetColl].nJet] = -100;
 
     // available JEC sets
     unsigned int nJECSets = pjet->availableJECSets().size();
@@ -2059,6 +2061,29 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
 
       JetInfo[iJetColl].Track_dxy[JetInfo[iJetColl].nTrack]      = ptrack.dxy(pv->position());
       JetInfo[iJetColl].Track_dz[JetInfo[iJetColl].nTrack]       = ptrack.dz(pv->position());
+      JetInfo[iJetColl].Track_dxyError[JetInfo[iJetColl].nTrack]      = ptrack.dxyError();
+      JetInfo[iJetColl].Track_dzError[JetInfo[iJetColl].nTrack]       = ptrack.dzError();
+       
+	 {
+	    TransverseImpactPointExtrapolator extrapolator(transientTrack.field());
+	    TrajectoryStateOnSurface closestOnTransversePlaneState =
+	      extrapolator.extrapolate(transientTrack.impactPointState(),RecoVertex::convertPos(pv->position()));
+	    GlobalPoint impactPoint    = closestOnTransversePlaneState.globalPosition();
+	    GlobalVector IPVec(impactPoint.x()-pv->x(),impactPoint.y()-pv->y(),0.);
+	    double prod = IPVec.dot(direction);
+	    int sign = (prod>=0) ? 1 : -1;
+	    JetInfo[iJetColl].Track_sign2D[JetInfo[iJetColl].nTrack]      = sign;
+	 }       
+	 {
+	    AnalyticalImpactPointExtrapolator extrapolator(transientTrack.field());
+	    TrajectoryStateOnSurface closestIn3DSpaceState =
+	      extrapolator.extrapolate(transientTrack.impactPointState(),RecoVertex::convertPos(pv->position()));
+	    GlobalPoint impactPoint = closestIn3DSpaceState.globalPosition();
+	    GlobalVector IPVec(impactPoint.x()-pv->x(),impactPoint.y()-pv->y(),impactPoint.z()-pv->z());
+	    double prod = IPVec.dot(direction);
+	    int sign = (prod>=0) ? 1 : -1;
+	    JetInfo[iJetColl].Track_sign3D[JetInfo[iJetColl].nTrack]      = sign;
+	 }       
 
       float deltaR = reco::deltaR( ptrackRef->eta(), ptrackRef->phi(),
                                    JetInfo[iJetColl].Jet_eta[JetInfo[iJetColl].nJet], JetInfo[iJetColl].Jet_phi[JetInfo[iJetColl].nJet] );
@@ -2629,6 +2654,16 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
     float CvsLPos = pjet->bDiscriminator(CvsLPosCJetTags_.c_str());
 
     // Jet information
+    JetInfo[iJetColl].Jet_DeepCSVBDisc[JetInfo[iJetColl].nJet]   = DeepCSVb + DeepCSVbb  ;
+    JetInfo[iJetColl].Jet_DeepCSVBDiscN[JetInfo[iJetColl].nJet]  = DeepCSVbN + DeepCSVbbN;
+    JetInfo[iJetColl].Jet_DeepCSVBDiscP[JetInfo[iJetColl].nJet]  = DeepCSVbP + DeepCSVbbP;
+    JetInfo[iJetColl].Jet_DeepCSVCvsLDisc[JetInfo[iJetColl].nJet]   = (DeepCSVc  != -1) ? (DeepCSVc  + DeepCSVcc )/(1-(DeepCSVl )) : -1;
+    JetInfo[iJetColl].Jet_DeepCSVCvsLDiscN[JetInfo[iJetColl].nJet]  = (DeepCSVcN != -1) ? (DeepCSVcN + DeepCSVccN)/(1-(DeepCSVlN)) : -1;
+    JetInfo[iJetColl].Jet_DeepCSVCvsLDiscP[JetInfo[iJetColl].nJet]  = (DeepCSVcP != -1) ? (DeepCSVcP + DeepCSVccP)/(1-(DeepCSVlP)) : -1;
+    JetInfo[iJetColl].Jet_DeepCSVCvsBDisc[JetInfo[iJetColl].nJet]   = (DeepCSVc  != -1) ? (DeepCSVc  + DeepCSVcc )/(1-(DeepCSVb + DeepCSVbb  )) : -1;
+    JetInfo[iJetColl].Jet_DeepCSVCvsBDiscN[JetInfo[iJetColl].nJet]  = (DeepCSVcN != -1) ? (DeepCSVcN + DeepCSVccN)/(1-(DeepCSVbN + DeepCSVbbN)) : -1;
+    JetInfo[iJetColl].Jet_DeepCSVCvsBDiscP[JetInfo[iJetColl].nJet]  = (DeepCSVcP != -1) ? (DeepCSVcP + DeepCSVccP)/(1-(DeepCSVbP + DeepCSVbbP)) : -1;
+
     JetInfo[iJetColl].Jet_DeepCSVb[JetInfo[iJetColl].nJet]   = DeepCSVb  ;
     JetInfo[iJetColl].Jet_DeepCSVc[JetInfo[iJetColl].nJet]   = DeepCSVc  ;
     JetInfo[iJetColl].Jet_DeepCSVl[JetInfo[iJetColl].nJet]   = DeepCSVl  ;

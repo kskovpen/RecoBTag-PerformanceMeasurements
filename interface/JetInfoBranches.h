@@ -35,6 +35,15 @@ class JetInfoBranches {
     float Jet_Mass4N[nMaxJets_];
     float Jet_Mass4P[nMaxJets_];
 
+    float Jet_DeepCSVBDisc[nMaxJets_]  ;
+    float Jet_DeepCSVBDiscN[nMaxJets_]  ;
+    float Jet_DeepCSVBDiscP[nMaxJets_]  ;
+    float Jet_DeepCSVCvsLDisc[nMaxJets_]  ;
+    float Jet_DeepCSVCvsLDiscN[nMaxJets_]  ;
+    float Jet_DeepCSVCvsLDiscP[nMaxJets_]  ;
+    float Jet_DeepCSVCvsBDisc[nMaxJets_]  ;
+    float Jet_DeepCSVCvsBDiscN[nMaxJets_]  ;
+    float Jet_DeepCSVCvsBDiscP[nMaxJets_]  ;
     float Jet_DeepCSVb[nMaxJets_]  ;
     float Jet_DeepCSVc[nMaxJets_]  ;
     float Jet_DeepCSVl[nMaxJets_]  ;
@@ -180,6 +189,10 @@ class JetInfoBranches {
     int   nTrack;
     float Track_dxy[nMaxTrk_];
     float Track_dz[nMaxTrk_];
+    float Track_dxyError[nMaxTrk_];
+    float Track_dzError[nMaxTrk_];
+    int   Track_sign2D[nMaxTrk_];
+    int   Track_sign3D[nMaxTrk_];
     float Track_LongIP[nMaxTrk_];
     float Track_length[nMaxTrk_];
     float Track_dist[nMaxTrk_];
@@ -476,6 +489,15 @@ class JetInfoBranches {
       tree->Branch((name+"Jet_Ip3N").c_str(),        Jet_Ip3N        ,(name+"Jet_Ip3N["+name+"nJet]/F").c_str());
       tree->Branch((name+"Jet_Ip3P").c_str(),        Jet_Ip3P        ,(name+"Jet_Ip3P["+name+"nJet]/F").c_str());
 
+		  tree->Branch((name+"Jet_DeepCSVBDisc"	 ).c_str(), Jet_DeepCSVBDisc	,(name+"Jet_DeepCSVBDisc["+name+"nJet]/F").c_str());
+		  tree->Branch((name+"Jet_DeepCSVBDiscN"	 ).c_str(), Jet_DeepCSVBDiscN, (name+"Jet_DeepCSVBDiscN["+name+"nJet]/F").c_str());
+		  tree->Branch((name+"Jet_DeepCSVBDiscP"	 ).c_str(), Jet_DeepCSVBDiscP, (name+"Jet_DeepCSVBDiscP["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsLDisc"	 ).c_str(), Jet_DeepCSVCvsLDisc	, (name+"Jet_DeepCSVCvsLDisc["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsLDiscN"	 ).c_str(), Jet_DeepCSVCvsLDiscN, (name+"Jet_DeepCSVCvsLDiscN["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsLDiscP"	 ).c_str(), Jet_DeepCSVCvsLDiscP, (name+"Jet_DeepCSVCvsLDiscP["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsBDisc"	 ).c_str(), Jet_DeepCSVCvsLDisc	, (name+"Jet_DeepCSVCvsBDisc["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsBDiscN"	 ).c_str(), Jet_DeepCSVCvsLDiscN, (name+"Jet_DeepCSVCvsBDiscN["+name+"nJet]/F").c_str());
+      tree->Branch((name+"Jet_DeepCSVCvsBDiscP"	 ).c_str(), Jet_DeepCSVCvsLDiscP, (name+"Jet_DeepCSVCvsBDiscP["+name+"nJet]/F").c_str());
 		  tree->Branch((name+"Jet_DeepCSVb"	 ).c_str(), Jet_DeepCSVb	,(name+"Jet_DeepCSVb["+name+"nJet]/F").c_str());
       tree->Branch((name+"Jet_DeepCSVc"	 ).c_str(), Jet_DeepCSVc	,(name+"Jet_DeepCSVc["+name+"nJet]/F").c_str());
       tree->Branch((name+"Jet_DeepCSVl"	 ).c_str(), Jet_DeepCSVl	,(name+"Jet_DeepCSVl["+name+"nJet]/F").c_str());
@@ -641,6 +663,10 @@ class JetInfoBranches {
       if (!br) tree->Branch((name+"nTrack").c_str()           ,&nTrack          ,(name+"nTrack/I").c_str());
       tree->Branch((name+"Track_dxy").c_str()        ,Track_dxy             ,(name+"Track_dxy["+name+"nTrack]/F").c_str());
       tree->Branch((name+"Track_dz").c_str()         ,Track_dz         ,(name+"Track_dz["+name+"nTrack]/F").c_str());
+      tree->Branch((name+"Track_dxyError").c_str()   ,Track_dxyError   ,(name+"Track_dxyError["+name+"nTrack]/F").c_str());
+      tree->Branch((name+"Track_dzError").c_str()    ,Track_dzError    ,(name+"Track_dzError["+name+"nTrack]/F").c_str());
+      tree->Branch((name+"Track_sign2D").c_str()     ,Track_sign2D    ,(name+"Track_sign2D["+name+"nTrack]/I").c_str());
+      tree->Branch((name+"Track_sign3D").c_str()     ,Track_sign3D    ,(name+"Track_sign3D["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_length").c_str()     ,Track_length     ,(name+"Track_length["+name+"nTrack]/F").c_str());
       tree->Branch((name+"Track_dist").c_str()       ,Track_dist            ,(name+"Track_dist["+name+"nTrack]/F").c_str());
       tree->Branch((name+"Track_IP2D").c_str()       ,Track_IP2D            ,(name+"Track_IP2D["+name+"nTrack]/F").c_str());
@@ -1137,6 +1163,10 @@ class JetInfoBranches {
       if (!br) tree->SetBranchAddress((name+"nTrack").c_str()          ,&nTrack            ) ;
       tree->SetBranchAddress((name+"Track_dxy").c_str()       ,Track_dxy          ) ;
       tree->SetBranchAddress((name+"Track_dz").c_str()        ,Track_dz           ) ;
+      tree->SetBranchAddress((name+"Track_dxyError").c_str()  ,Track_dxyError          ) ;
+      tree->SetBranchAddress((name+"Track_dzError").c_str()   ,Track_dzError           ) ;
+      tree->SetBranchAddress((name+"Track_sign2D").c_str()    ,Track_sign2D          ) ;
+      tree->SetBranchAddress((name+"Track_sign3D").c_str()    ,Track_sign3D          ) ;
       tree->SetBranchAddress((name+"Track_length").c_str()    ,Track_length   ) ;
       tree->SetBranchAddress((name+"Track_dist").c_str()      ,Track_dist     ) ;
       tree->SetBranchAddress((name+"Track_IP2D").c_str()      ,Track_IP2D     ) ;

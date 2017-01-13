@@ -14,6 +14,11 @@ options.register('runOnData', False,
     VarParsing.varType.bool,
     "Run this on real data"
 )
+options.register('isPromptReco', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Running on prompt reco"
+)
 options.register('outFilename', 'JetTree',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
@@ -44,15 +49,20 @@ options.register('usePuppiForBTagging', False,
     VarParsing.varType.bool,
     "Use Puppi candidates for b tagging"
 )
-options.register('mcGlobalTag', '80X_mcRun2_asymptotic_2016_miniAODv2_v1', #note: to be updated for the new Moriond 2017 MC
+options.register('mcGlobalTag', '80X_mcRun2_asymptotic_2016_TrancheIV_v6', 
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "MC global tag"
 )
-options.register('dataGlobalTag', '80X_dataRun2_2016SeptRepro_v3', #note: does not yet include the final JECs for this ReReco
+options.register('dataGlobalTag', '80X_dataRun2_2016SeptRepro_v4',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "Data global tag"
+)
+options.register('dataGlobalTagPrompt', '80X_dataRun2_Prompt_v15',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "Data global tag for RunH"
 )
 options.register('runJetClustering', False,
     VarParsing.multiplicity.singleton,
@@ -218,6 +228,9 @@ if options.doCTag:
 globalTag = options.mcGlobalTag
 if options.runOnData:
     globalTag = options.dataGlobalTag
+    if options.isPromptReco:
+        print 'Using prompt reco GT'
+        globalTag = options.dataGlobalTagPrompt
 
 ## Jet energy corrections
 jetCorrectionsAK4 = ('AK4PF', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
@@ -489,8 +502,7 @@ process.source = cms.Source("PoolSource",
 
 if options.miniAOD:
     process.source.fileNames = [
-        '/store/relval/CMSSW_8_0_0/RelValTTbar_13/MINIAODSIM/PU25ns_80X_mcRun2_asymptotic_v4-v1/10000/A65CD249-BFDA-E511-813A-0025905A6066.root'
-        #'/store/mc/RunIISpring16MiniAODv2/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/90000/02A0E7CE-1B35-E611-8612-0CC47A7FC4C8.root'
+        '/store/mc/RunIISummer16MiniAODv2/QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/06D23EE0-0EB7-E611-9676-A0369F3102B6.root'
     ]
     if options.runOnData:
         process.source.fileNames = [
@@ -620,9 +632,9 @@ if options.usePrivateJEC:
 
 ### to activate the new JP calibration: using the data base
 #Do not use the 80X calibrations if the ntuples are meant to measure SFs or to commission cMVAv2
-trkProbaCalibTag = "JPcalib_MC80X_v2" 
+trkProbaCalibTag = "JPcalib_MC80X_v3" 
 if options.runOnData:
-  trkProbaCalibTag = "JPcalib_Data80X_2016_v2" 
+  trkProbaCalibTag = "JPcalib_Data80X_2016_v3" 
 # process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("BTagTrackProbability3DRcd"),
