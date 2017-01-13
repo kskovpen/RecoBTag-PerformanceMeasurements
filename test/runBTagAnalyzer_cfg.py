@@ -190,6 +190,12 @@ options.register('isReHLT', False,
     VarParsing.varType.bool,
     '80X reHLT samples')
 
+options.register('applySmearing', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Apply IP smearing"
+)
+    
 ## 'maxEvents' is already registered by the Framework, changing default value
 options.setDefault('maxEvents', -1)
 
@@ -650,6 +656,15 @@ process.load("SimTracker.TrackHistory.TrackHistory_cff")
 process.load("SimTracker.TrackHistory.TrackClassifier_cff")
 process.load("SimTracker.TrackAssociatorProducers.quickTrackAssociatorByHits_cfi")
 process.load("SimTracker.TrackAssociation.trackingParticleRecoTrackAsssociation_cfi")
+
+if options.useLegacyTaggers:
+    process.load("RecoBTag.ImpactParameter.impactParameterTagInfos_cfi")
+    process.impactParameterTagInfos.isData = options.runOnData
+    process.impactParameterTagInfos.applySmearing = options.applySmearing
+else:
+    process.load("RecoBTag.ImpactParameter.pfImpactParameterTagInfos_cfi")
+    process.pfImpactParameterTagInfos.isData = options.runOnData
+    process.pfImpactParameterTagInfos.applySmearing = options.applySmearing
 
 #-------------------------------------
 ## Output Module Configuration (expects a path 'p')
@@ -1236,7 +1251,7 @@ process.btagana.tracksColl            = cms.InputTag(trackSource)
 process.btagana.useSelectedTracks     = True  ## False if you want to run on all tracks : for commissioning studies
 process.btagana.useTrackHistory       = False ## Can only be used with GEN-SIM-RECODEBUG files
 process.btagana.fillsvTagInfo         = False ## True if you want to store information relative to the svTagInfos, set to False if produceJetTrackTree is set to False
-process.btagana.produceJetTrackTree   = False ## True if you want to keep info for tracks associated to jets : for commissioning studies
+process.btagana.produceJetTrackTree   = True ## True if you want to keep info for tracks associated to jets : for commissioning studies
 process.btagana.produceJetTrackTruthTree = False ## can only be used with GEN-SIM-RECODEBUG files and when useTrackHistory is True
 process.btagana.produceAllTrackTree   = False ## True if you want to keep info for all tracks : for commissioning studies
 process.btagana.producePtRelTemplate  = options.producePtRelTemplate  ## True for performance studies
